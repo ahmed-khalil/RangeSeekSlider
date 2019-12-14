@@ -86,12 +86,27 @@ import UIKit
 
     /// Each handle in the slider has a label above it showing the current selected value. By default, this is displayed as a decimal format.
     /// You can update this default here by updating properties of NumberFormatter. For example, you could supply a currency style, or a prefix or suffix.
-    open var numberFormatter: NumberFormatter = {
+    public let numberFormatter: NumberFormatter = {
         let formatter: NumberFormatter = NumberFormatter()
         formatter.numberStyle = .decimal
         formatter.maximumFractionDigits = 0
         return formatter
     }()
+    
+    public let minNumberFormatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.maximumFractionDigits = 0
+        return formatter
+    }()
+    
+    public let maxNumberFormatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.maximumFractionDigits = 0
+        return formatter
+    }()
+    
 
     /// Hides the labels above the slider controls. true = labels will be hidden. false = labels will be shown. Default is false.
     @IBInspectable open var hideLabels: Bool = false {
@@ -412,7 +427,7 @@ import UIKit
 
         // draw the text labels
         let labelFontSize: CGFloat = 12.0
-        let labelFrame: CGRect = CGRect(x: 0.0, y: 50.0, width: 75.0, height: 14.0)
+        let labelFrame: CGRect = CGRect(x: 0.0, y: 0.0, width: 75.0, height: 14.0)
 
         minLabelFont = UIFont.systemFont(ofSize: labelFontSize)
         minLabel.alignmentMode = CATextLayerAlignmentMode.center
@@ -479,21 +494,21 @@ import UIKit
         if let replacedString = delegate?.rangeSeekSlider(self, stringForMinValue: selectedMinValue) {
             minLabel.string = replacedString
         } else {
-            minLabel.string = numberFormatter.string(from: selectedMinValue as NSNumber)
+            minLabel.string = minNumberFormatter.string(from: selectedMinValue as NSNumber)
         }
 
         if let replacedString = delegate?.rangeSeekSlider(self, stringForMaxValue: selectedMaxValue) {
             maxLabel.string = replacedString
         } else {
-            maxLabel.string = numberFormatter.string(from: selectedMaxValue as NSNumber)
+            maxLabel.string = maxNumberFormatter.string(from: selectedMaxValue as NSNumber)
         }
 
         if let nsstring = minLabel.string as? NSString {
-            minLabelTextSize = nsstring.size(withAttributes: [.font: minLabelFont])
+            minLabelTextSize = nsstring.size(withAttributes: [NSAttributedString.Key.font: minLabelFont])
         }
 
         if let nsstring = maxLabel.string as? NSString {
-            maxLabelTextSize = nsstring.size(withAttributes: [.font: maxLabelFont])
+            maxLabelTextSize = nsstring.size(withAttributes: [NSAttributedString.Key.font: maxLabelFont])
         }
     }
 
@@ -547,7 +562,7 @@ import UIKit
                                                 width: rightHandle.position.x - leftHandle.position.x,
                                                 height: lineHeight)
     }
-    
+
     private func updateLabelPositions() {
         // the center points for the labels are X = the same x position as the relevant handle. Y = the y position of the handle minus half the height of the text label, minus some padding.
 
@@ -562,11 +577,11 @@ import UIKit
         let minSpacingBetweenLabels: CGFloat = 8.0
 
         let newMinLabelCenter: CGPoint = CGPoint(x: leftHandle.frame.midX,
-                                                 y: leftHandle.frame.maxY + (minLabelTextSize.height/2) + labelPadding)
+                                                 y: leftHandle.frame.minY - (minLabelTextSize.height / 2.0) - labelPadding)
 
         let newMaxLabelCenter: CGPoint = CGPoint(x: rightHandle.frame.midX,
-                                                 y: rightHandle.frame.maxY + (maxLabelTextSize.height/2) + labelPadding)
-        
+                                                 y: rightHandle.frame.minY - (maxLabelTextSize.height / 2.0) - labelPadding)
+
         let newLeftMostXInMaxLabel: CGFloat = newMaxLabelCenter.x - maxLabelTextSize.width / 2.0
         let newRightMostXInMinLabel: CGFloat = newMinLabelCenter.x + minLabelTextSize.width / 2.0
         let newSpacingBetweenTextLabels: CGFloat = newLeftMostXInMaxLabel - newRightMostXInMinLabel
